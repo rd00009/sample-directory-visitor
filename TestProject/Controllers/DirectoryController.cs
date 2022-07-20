@@ -4,15 +4,21 @@ using System.Linq;
 using System.Net;
 using System.Net.Http;
 using System.Web.Http;
+using TestProject.Service;
 
 namespace TestProject.Controllers
 {
 	public class DirectoryController : ApiController
 	{
+		private readonly IDirectoryService _directoryService;
+		public DirectoryController(IDirectoryService directoryService)
+		{
+			_directoryService = directoryService;
+		}
 		// GET api/<controller>
 		public IEnumerable<string> Get()
 		{
-			return new string[] { "value1", "value2" };
+			return new string[] { "value1", "value2", _directoryService.GetFolderDetail() };
 		}
 
 		// GET api/<controller>/5

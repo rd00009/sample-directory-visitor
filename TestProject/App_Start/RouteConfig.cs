@@ -5,6 +5,8 @@ using System.Web;
 using System.Web.Http;
 using System.Web.Mvc;
 using System.Web.Routing;
+using TestProject.Service;
+using Unity;
 
 namespace TestProject
 {
@@ -27,7 +29,9 @@ namespace TestProject
 		public static void Register(HttpConfiguration config)
 		{
 			// Web API configuration and services
-
+			var container = new UnityContainer();
+			container.RegisterType<IDirectoryService, DirectoryService>();
+			config.DependencyResolver = new UnityResolver(container);
 			// Web API routes
 			config.MapHttpAttributeRoutes();
 
