@@ -18,7 +18,7 @@ namespace TestProject.Controllers
 		// GET api/<controller>
 		public IEnumerable<string> Get()
 		{
-			return new string[] { "value1", "value2", _directoryService.GetFolderDetail() };
+			return new string[] { "value1", "value2"};
 		}
 
 		// GET api/<controller>/5

@@ -1,0 +1,9 @@
+﻿@model IEnumerable<TestProject.Models.Files>
+
+<h4>File List: </h4>
+<ul>
+    @foreach (var item in Model)
+    {
+        <li>@item.FileName</li>
+    }
+</ul>
