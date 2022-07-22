@@ -1,1 +1,71 @@
-﻿
+﻿body {
+   /* background-color: aliceblue;*/
+}
+
+.container {
+    width: 80%;
+    margin: auto;
+    padding: 10px 10px 10px 10px;
+    /*background: beige;*/
+    border-radius:4px;
+}
+
+#container_fileList {
+    max-height: 450px;
+    min-height: 450px;
+    overflow: scroll;
+
+}
+
+ul {
+    list-style: none;
+}
+
+    ul.folder li::before {
+        content: "📁";
+        display: inline-block;
+        margin-right: 0.2rem;
+    }
+
+    ul.files li:before {
+        content: "📖";
+    }
+
+    ul ul li::before {
+        content: "📌";
+    }
+
+    ul ul ul li::before {
+        content: "🤷‍♀️";
+    }
+
+.heading {
+    color: blue;
+    background-color:honeydew;
+    padding:5px 5px 5px 5px;
+   /* box-shadow:2px ;*/
+}
+
+.label {
+    font-size: 14px;
+    font-weight: bold;
+    color: blue;
+}
+
+.label-val {
+    font-size: 12px;
+}
+
+.footer {
+    position: fixed;
+    left: 50%;
+    bottom: 0px;
+    transform: translate(-50%, -50%);
+    margin: 0 auto;
+    background-color:aquamarine;
+    padding:3px 3px 3px 3px;
+    width:80%;
+    text-align:center;
+}
+
+

@@ -7,9 +7,9 @@ using TestProject.Service;
 
 namespace TestProject.Controllers
 {
-    public class DefaultController : Controller
-    {
-        //private readonly IDirectoryService _directoryService;
+	public class DefaultController : Controller
+	{
+		//private readonly IDirectoryService _directoryService;
         public DefaultController()
         {
             //_directoryService = new DirectoryService();
@@ -20,8 +20,8 @@ namespace TestProject.Controllers
         //}
         // GET: Default
         public ActionResult Index()
-        {
-            return View();
-        }
-    }
+		{			
+			return View();
+		}
+	}
 }

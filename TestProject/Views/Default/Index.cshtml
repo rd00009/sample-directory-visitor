@@ -3,18 +3,20 @@
 <head>
     <title></title>
     <script src="~/Scripts/jquery-3.4.1.min.js"></script>
+    <script src="~/Scripts/testapp.js"></script>
+    <link href="~/Content/site.css" rel="stylesheet" />
 </head>
 <body>
-    <div id="container_currentDirectory">
-        @Html.Partial("_currentDirectory")
-    </div>
-    
-    <div id="container_fileList">
-        @*@Html.Partial("_fileList")*@
-    </div>
-    <div>
-        Right Panel
-    </div>
+    <div class="container">
+        <div class="heading" id="container_currentDirectory">
+            @*@Html.Partial("_currentDirectory")*@
+        </div>
 
+        <div id="container_fileList">
+            @*@Html.Partial("_fileList")*@
+        </div>
+        <div class="footer" id="container_footer">
+        </div>       
+    </div>
 </body>
 </html>
