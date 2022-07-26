@@ -4,6 +4,7 @@ using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using System.Web;
 using TestProject.Models;
 
 namespace TestProject.Service
@@ -13,7 +14,8 @@ namespace TestProject.Service
         bool UploadFile();
         bool DownloadFile();
         List<Files> GetFolderDetail(string folderPath);
-        DirectoryModel GetCurrentDirectory(string directoryPath);
+        DirectoryModel GetCurrentDirectory(string directoryPath, string sText = "");
+        string UploadFile(HttpRequest httpRequest);
     }
 
     public class DirectoryService : IDirectoryService
@@ -25,7 +27,7 @@ namespace TestProject.Service
             return true;
         }
 
-        public DirectoryModel GetCurrentDirectory(string directoryPath)
+        public DirectoryModel GetCurrentDirectory(string directoryPath, string sText = "")
         {
             DirectoryModel model = new DirectoryModel();
             model.CurrentDirectory = new CurrentDirectory();
@@ -35,6 +37,12 @@ namespace TestProject.Service
             if (string.IsNullOrEmpty(directoryPath))
             {
                 directoryPath = DefaultServerDirectory;
+            }
+
+            if (!Directory.Exists(directoryPath))
+            {
+                model.ResponseText = "Failed: Directory does not exist!";
+                return model;
             }
             var directory = new DirectoryInfo(directoryPath);
 
@@ -60,7 +68,7 @@ namespace TestProject.Service
             //model.CurrentDirectory.DirectorySize = ConvertFileSize(dirSize);
 
             var directories = GetAllDirectories(directory);
-            var files = GetAllFiles(directory);
+            var files = GetAllFiles(directory, sText);
 
             foreach (var item in directories)
             {
@@ -101,13 +109,21 @@ namespace TestProject.Service
         }
 
 
-        private FileInfo[] GetAllFiles(DirectoryInfo directoryInfo)
+        private FileInfo[] GetAllFiles(DirectoryInfo directoryInfo, string sText = "")
         {
+            if (!string.IsNullOrEmpty(sText))
+            {
+                return directoryInfo.GetFiles("*" + sText + "*.*", SearchOption.AllDirectories);
+            }
             return directoryInfo.GetFiles();
         }
 
-        private DirectoryInfo[] GetAllDirectories(DirectoryInfo directoryInfo)
+        private DirectoryInfo[] GetAllDirectories(DirectoryInfo directoryInfo, string sText = "")
         {
+            if (!string.IsNullOrEmpty(sText))
+            {
+                return directoryInfo.GetDirectories("*" + sText + "*.*", SearchOption.AllDirectories);
+            }
             return directoryInfo.GetDirectories();
         }
 
@@ -121,6 +137,28 @@ namespace TestProject.Service
                 counter++;
             }
             return string.Format("{0:n1} {1}", number, suffixes[counter]);
+        }
+
+
+        public string UploadFile(HttpRequest httpRequest)
+        {
+            var dirPath = httpRequest["directoryPath"];
+            if (string.IsNullOrEmpty(dirPath))
+            {
+                dirPath = DefaultServerDirectory;
+            }
+            var docfiles = new List<string>();
+            foreach (string file in httpRequest.Files)
+            {
+                var postedFile = httpRequest.Files[file];
+                string fileToUpload = dirPath + "/" + postedFile.FileName;
+                //if (!File.Exists(fileToUpload))
+                //{
+                postedFile.SaveAs(fileToUpload);
+                docfiles.Add(fileToUpload);
+                //}                               
+            }
+            return string.Join(",", docfiles);
         }
 
     }

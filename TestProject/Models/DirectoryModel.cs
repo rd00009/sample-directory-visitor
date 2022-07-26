@@ -12,8 +12,7 @@ namespace TestProject.Models
         public List<Folder> SiteMap { get; set; }
         public List<Files> Files { get; set; }
         public List<Folder> Folders { get; set; }
-
-
+        public string ResponseText { get; set; }=string.Empty;
     }
 
     public class CurrentDirectory

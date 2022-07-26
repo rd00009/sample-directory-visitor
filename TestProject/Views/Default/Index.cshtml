@@ -8,15 +8,40 @@
 </head>
 <body>
     <div class="container">
-        <div class="heading" id="container_currentDirectory">
-            @*@Html.Partial("_currentDirectory")*@
+        <div class="searchBox">
+            <div style="margin-right: 23px;">
+                <form class="example">
+                    <input id="sText" type="text" placeholder="Search.." name="search">
+                    <button onclick="searchDirectory()" type="button">Search</button>
+                </form>
+            </div>
+            <div style="margin-right: 12px;">
+                <form method="post" action="" enctype="multipart/form-data"
+                      id="myform">
+
+                    <div>
+                        <input type="file" id="file" name="file" />
+                        <input type="button" class="button" value="Upload" onclick="UploadFile()"
+                               id="but_upload">
+                    </div>
+                </form>
+            </div>
         </div>
+        <div class="heading">
+
+            <div id="container_currentDirectory">
+                @*@Html.Partial("_currentDirectory")*@
+            </div>
+        </div>
+       
 
         <div id="container_fileList">
             @*@Html.Partial("_fileList")*@
         </div>
         <div class="footer" id="container_footer">
-        </div>       
+        </div>
+
+
     </div>
 </body>
 </html>
