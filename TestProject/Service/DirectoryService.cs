@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Configuration;
 using System.IO;
 using System.Linq;
 using System.Text;
@@ -12,7 +13,7 @@ namespace TestProject.Service
     public interface IDirectoryService
     {
         bool UploadFile();
-        bool DownloadFile();
+        byte[] DownloadFile(string FilePath);
         List<Files> GetFolderDetail(string folderPath);
         DirectoryModel GetCurrentDirectory(string directoryPath, string sText = "");
         string UploadFile(HttpRequest httpRequest);
@@ -20,12 +21,9 @@ namespace TestProject.Service
 
     public class DirectoryService : IDirectoryService
     {
-        private const string DefaultServerDirectory = @"D:\";
+        private string DefaultServerDirectory = ConfigurationManager.AppSettings["RootDirectory"];
         private static readonly string[] suffixes = { "Bytes", "KB", "MB", "GB", "TB", "PB" };
-        public bool DownloadFile()
-        {
-            return true;
-        }
+
 
         public DirectoryModel GetCurrentDirectory(string directoryPath, string sText = "")
         {
@@ -33,7 +31,7 @@ namespace TestProject.Service
             model.CurrentDirectory = new CurrentDirectory();
             model.Files = new List<Files>();
             model.Folders = new List<Folder>();
-            long dirSize = 0;
+
             if (string.IsNullOrEmpty(directoryPath))
             {
                 directoryPath = DefaultServerDirectory;
@@ -57,19 +55,13 @@ namespace TestProject.Service
             }
 
 
-            //var fileNames = Directory.GetFiles(directoryPath, "*", SearchOption.AllDirectories);
+            long totalSize = directory.GetFiles("*" + sText + "*.*", SearchOption.AllDirectories).Sum(file => file.Length);
+            model.CurrentDirectory.DirectorySize = ConvertFileSize(totalSize);
 
-            //foreach (var file in fileNames)
+            //only add dictory object to model when there is no search
+            //if (string.IsNullOrEmpty(sText))
             //{
-            //    var fileInfo = new FileInfo(file);
-            //    dirSize += fileInfo.Length;
-            //}
-
-            //model.CurrentDirectory.DirectorySize = ConvertFileSize(dirSize);
-
-            var directories = GetAllDirectories(directory);
-            var files = GetAllFiles(directory, sText);
-
+            var directories = GetAllDirectories(directory, sText);
             foreach (var item in directories)
             {
                 if (!item.Attributes.HasFlag(FileAttributes.Hidden))
@@ -78,13 +70,18 @@ namespace TestProject.Service
                     model.Folders.Add(new Folder { Name = item.Name, FullPath = item.FullName });
                 }
             }
+            //}
 
+
+
+
+            var files = GetAllFiles(directory, sText);
             foreach (var item in files)
             {
                 if (!item.Attributes.HasFlag(FileAttributes.Hidden))
                 {
                     model.CurrentDirectory.FileCount += 1;
-                    model.Files.Add(new Files { FileName = item.Name, FileSize = ConvertFileSize(item.Length), FileType = item.Extension, DownloadPath = item.DirectoryName });
+                    model.Files.Add(new Files { FileName = item.Name, FileSize = ConvertFileSize(item.Length), FileType = item.Extension, DownloadPath = item.FullName });
                 }
             }
 
@@ -159,6 +156,19 @@ namespace TestProject.Service
                 //}                               
             }
             return string.Join(",", docfiles);
+        }
+
+
+        public byte[] DownloadFile(string FilePath)
+        {
+            var stream = new MemoryStream();
+            using (var fileStream = File.OpenRead(FilePath))
+            {
+                stream.CopyTo(fileStream);
+                return stream.ToArray();
+            }
+
+            return null;            
         }
 
     }

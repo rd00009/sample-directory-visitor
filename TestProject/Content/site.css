@@ -1,37 +1,24 @@
-﻿body {
-    /* background-color: aliceblue;*/
+﻿body {    
     font-family: monospace !important;
 }
 
 .container {
     width: 80%;
     margin: auto;
-    padding: 10px 10px 10px 10px;
-    /*background: beige;*/
+    padding: 10px 10px 10px 10px;    
     border-radius: 4px;
 }
 #container_currentDirectory {
     clear:both;
 }
-#container_fileList {
-    /*max-height: 400px;
-    min-height: 400px;
-    overflow: scroll;*/
+#container_fileList {  
     display: flex;
-    margin-top: 8%;
+    margin-top: 10%;
 }
 
 ul {
     list-style: none;
 }
-
-    /*ul li {
-        float: left;
-        padding-right: 10%;
-        padding-bottom: 1%;
-        width:200px;
-    }*/
-
     ul.folder li::before {
         content: "📁";
         display: inline-block;
@@ -70,7 +57,7 @@ ul {
     position: fixed;
     left: 50%;
     bottom: 0px;
-    transform: translate(-50%, -50%);
+    transform: translate(-50%, 0%);
     margin: 0 auto;
     background-color: #7e236a;
     padding: 3px 3px 3px 3px;
@@ -79,25 +66,14 @@ ul {
     color:wheat;
 }
 
-/*.heading {
-    position: fixed;
-    left: 50%;
-    top: 100px;
-    transform: translate(-50%, -50%);
-    margin: 0 auto;
-    background-color: aquamarine;
-    padding: 3px 3px 3px 3px;
-    width: 80%;
-    text-align: center;
-}*/
 
 .heading {
     position: fixed;
     display: flex;
     color: blue;
-   /* background-color: honeydew;*/
+    background-color: white;
     margin-bottom: 20px;
-    margin-top: 12px;
+    margin-top: 20px;
     width: 80%;
     padding-left:20px;
 }
@@ -116,4 +92,14 @@ ul {
     width: 80%;
     padding-top: 8px;
     padding-bottom: 8px;
+}
+
+.searchButton {
+    margin-left: 20px;
+    background: none !important;
+    border: none;
+    padding: 0 !important;    
+    font-family: arial, sans-serif;    
+    color: #069;   
+    cursor: pointer;
 }

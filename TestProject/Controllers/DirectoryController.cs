@@ -1,7 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Net;
 using System.Net.Http;
+using System.Net.Http.Headers;
+using System.Threading.Tasks;
 using System.Web;
 using System.Web.Http;
 using TestProject.Models;
@@ -35,13 +38,6 @@ namespace TestProject.Controllers
             }
         }
 
-        //// GET api/<controller>/5
-        //public string Get(int id)
-        //{
-        //	return "value";
-        //}
-
-        // POST api/<controller>
         [HttpPost]
         public IHttpActionResult PostFile()
         {
@@ -60,16 +56,46 @@ namespace TestProject.Controllers
                 return BadRequest(ex.Message);
             }
         }
-
-
-        // PUT api/<controller>/5
-        public void Put(int id, [FromBody] string value)
-        {
+        
+        public byte[] DownloadFileAsync(string filePath)
+        {           
+            if (!File.Exists(filePath)) return null;
+            var bytes = File.ReadAllBytes(filePath);
+            return bytes;
         }
 
-        // DELETE api/<controller>/5
-        public void Delete(int id)
+        [HttpGet]
+        public HttpResponseMessage DownloadFile(string filePath)
         {
+            HttpResponseMessage result = null;
+            var documentDownload = DownloadFileAsync(filePath);           
+
+            if (documentDownload != null)
+            {
+                FileInfo fileInfo = new FileInfo(filePath);
+
+                var stream = new MemoryStream(documentDownload);
+                result = Request.CreateResponse(HttpStatusCode.OK);
+                
+                result.Content = new StreamContent(stream);
+                result.Content.Headers.ContentType =
+                    new MediaTypeHeaderValue(MimeMapping.GetMimeMapping(fileInfo.Name));
+                result.Headers.AcceptRanges.Add("bytes");
+                result.Content.Headers.ContentDisposition =
+                    new ContentDispositionHeaderValue("attachment")
+                    {
+                        FileName = string.Concat(fileInfo.Name)
+                    };
+                result.Content.Headers.ContentDisposition.FileName = fileInfo.Name;
+                result.Content.Headers.ContentLength = stream.Length;
+            }
+            else
+            {
+                result = Request.CreateResponse(HttpStatusCode.NoContent);
+            }
+
+            return result;
         }
     }
+    
 }
