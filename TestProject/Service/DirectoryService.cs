@@ -3,6 +3,8 @@ using System.Collections.Generic;
 using System.Configuration;
 using System.IO;
 using System.Linq;
+using System.Net;
+using System.Net.Http;
 using System.Text;
 using System.Threading.Tasks;
 using System.Web;
@@ -11,12 +13,10 @@ using TestProject.Models;
 namespace TestProject.Service
 {
     public interface IDirectoryService
-    {
-        bool UploadFile();
-        byte[] DownloadFile(string FilePath);
-        List<Files> GetFolderDetail(string folderPath);
+    {                      
         DirectoryModel GetCurrentDirectory(string directoryPath, string sText = "");
         string UploadFile(HttpRequest httpRequest);
+        byte[] ReadFileBytes(string filePath);
     }
 
     public class DirectoryService : IDirectoryService
@@ -24,10 +24,10 @@ namespace TestProject.Service
         private string DefaultServerDirectory = ConfigurationManager.AppSettings["RootDirectory"];
         private static readonly string[] suffixes = { "Bytes", "KB", "MB", "GB", "TB", "PB" };
 
-
         public DirectoryModel GetCurrentDirectory(string directoryPath, string sText = "")
         {
             DirectoryModel model = new DirectoryModel();
+
             model.CurrentDirectory = new CurrentDirectory();
             model.Files = new List<Files>();
             model.Folders = new List<Folder>();
@@ -36,14 +36,54 @@ namespace TestProject.Service
             {
                 directoryPath = DefaultServerDirectory;
             }
-
             if (!Directory.Exists(directoryPath))
             {
                 model.ResponseText = "Failed: Directory does not exist!";
                 return model;
             }
+
+
             var directory = new DirectoryInfo(directoryPath);
 
+            LoadCurrentDirectoryDetailInModel(directoryPath, sText, model, directory);
+
+            LoadFoldersInModel(sText, model, directory);
+
+            LoadFilesInModel(sText, model, directory);
+
+            return model;
+        }
+
+        public string UploadFile(HttpRequest httpRequest)
+        {
+            var dirPath = httpRequest["directoryPath"];
+            if (string.IsNullOrEmpty(dirPath))
+            {
+                dirPath = DefaultServerDirectory;
+            }
+            var docfiles = new List<string>();
+            foreach (string file in httpRequest.Files)
+            {
+                var postedFile = httpRequest.Files[file];
+                string fileToUpload = dirPath + "/" + postedFile.FileName;                
+                postedFile.SaveAs(fileToUpload);
+                docfiles.Add(fileToUpload);                                             
+            }
+            return string.Join(",", docfiles);
+        }
+       
+        public byte[] ReadFileBytes(string filePath)
+        {
+            if (!File.Exists(filePath)) return null;
+            var bytes = File.ReadAllBytes(filePath);
+            return bytes;
+        }
+
+
+        #region helperMethod
+
+        private void LoadCurrentDirectoryDetailInModel(string directoryPath, string sText, DirectoryModel model, DirectoryInfo directory)
+        {
             model.CurrentDirectory.Path = directoryPath;
             if (directoryPath.Length == DefaultServerDirectory.Length)
             {
@@ -57,24 +97,10 @@ namespace TestProject.Service
 
             long totalSize = directory.GetFiles("*" + sText + "*.*", SearchOption.AllDirectories).Sum(file => file.Length);
             model.CurrentDirectory.DirectorySize = ConvertFileSize(totalSize);
+        }
 
-            //only add dictory object to model when there is no search
-            //if (string.IsNullOrEmpty(sText))
-            //{
-            var directories = GetAllDirectories(directory, sText);
-            foreach (var item in directories)
-            {
-                if (!item.Attributes.HasFlag(FileAttributes.Hidden))
-                {
-                    model.CurrentDirectory.FolderCount += 1;
-                    model.Folders.Add(new Folder { Name = item.Name, FullPath = item.FullName });
-                }
-            }
-            //}
-
-
-
-
+        private void LoadFilesInModel(string sText, DirectoryModel model, DirectoryInfo directory)
+        {
             var files = GetAllFiles(directory, sText);
             foreach (var item in files)
             {
@@ -84,28 +110,20 @@ namespace TestProject.Service
                     model.Files.Add(new Files { FileName = item.Name, FileSize = ConvertFileSize(item.Length), FileType = item.Extension, DownloadPath = item.FullName });
                 }
             }
-
-            return model;
         }
 
-        public List<Files> GetFolderDetail(string folderPath)
+        private void LoadFoldersInModel(string sText, DirectoryModel model, DirectoryInfo directory)
         {
-            List<Files> files = new List<Files>();
-            var list = Directory.GetFiles(folderPath);
-            foreach (var item in list)
+            var directories = GetAllDirectories(directory, sText);
+            foreach (var item in directories)
             {
-                files.Add(new Files { FileName = item });
+                if (!item.Attributes.HasFlag(FileAttributes.Hidden))
+                {
+                    model.CurrentDirectory.FolderCount += 1;
+                    model.Folders.Add(new Folder { Name = item.Name, FullPath = item.FullName });
+                }
             }
-
-            return files;
         }
-
-        public bool UploadFile()
-        {
-            return true;
-        }
-
-
         private FileInfo[] GetAllFiles(DirectoryInfo directoryInfo, string sText = "")
         {
             if (!string.IsNullOrEmpty(sText))
@@ -135,41 +153,7 @@ namespace TestProject.Service
             }
             return string.Format("{0:n1} {1}", number, suffixes[counter]);
         }
-
-
-        public string UploadFile(HttpRequest httpRequest)
-        {
-            var dirPath = httpRequest["directoryPath"];
-            if (string.IsNullOrEmpty(dirPath))
-            {
-                dirPath = DefaultServerDirectory;
-            }
-            var docfiles = new List<string>();
-            foreach (string file in httpRequest.Files)
-            {
-                var postedFile = httpRequest.Files[file];
-                string fileToUpload = dirPath + "/" + postedFile.FileName;
-                //if (!File.Exists(fileToUpload))
-                //{
-                postedFile.SaveAs(fileToUpload);
-                docfiles.Add(fileToUpload);
-                //}                               
-            }
-            return string.Join(",", docfiles);
-        }
-
-
-        public byte[] DownloadFile(string FilePath)
-        {
-            var stream = new MemoryStream();
-            using (var fileStream = File.OpenRead(FilePath))
-            {
-                stream.CopyTo(fileStream);
-                return stream.ToArray();
-            }
-
-            return null;            
-        }
+        #endregion helperMethod
 
     }
 }

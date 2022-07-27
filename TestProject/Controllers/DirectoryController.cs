@@ -19,7 +19,12 @@ namespace TestProject.Controllers
         {
             _directoryService = directoryService;
         }
-        // GET api/<controller>
+        /// <summary>
+        /// Get the current directory or search a keyword in the current directory
+        /// </summary>
+        /// <param name="DirectoryPath">physical path of directory</param>
+        /// <param name="sText">keyword to search</param>
+        /// <returns></returns>
         [HttpGet]
         public IHttpActionResult GetCurrentDirectory(string DirectoryPath = "", string sText = "")
         {
@@ -38,6 +43,10 @@ namespace TestProject.Controllers
             }
         }
 
+        /// <summary>
+        /// To upload file
+        /// </summary>
+        /// <returns></returns>
         [HttpPost]
         public IHttpActionResult PostFile()
         {
@@ -47,7 +56,11 @@ namespace TestProject.Controllers
                 if (httpRequest.Files.Count > 0)
                 {
                     string fileResponse = _directoryService.UploadFile(httpRequest);
-                    return Ok("File has been uploaded");
+                    if (fileResponse.Length > 0)
+                    {
+                        return Ok("File has been uploaded");
+                    }
+                    return BadRequest("No file has been uploaded!");
                 }
                 return BadRequest("Please upload file!");
             }
@@ -56,19 +69,18 @@ namespace TestProject.Controllers
                 return BadRequest(ex.Message);
             }
         }
-        
-        public byte[] DownloadFileAsync(string filePath)
-        {           
-            if (!File.Exists(filePath)) return null;
-            var bytes = File.ReadAllBytes(filePath);
-            return bytes;
-        }
 
+        
+        /// <summary>
+        /// Donwload file by path
+        /// </summary>
+        /// <param name="filePath">absolute path of file</param>
+        /// <returns></returns>
         [HttpGet]
         public HttpResponseMessage DownloadFile(string filePath)
         {
             HttpResponseMessage result = null;
-            var documentDownload = DownloadFileAsync(filePath);           
+            var documentDownload = _directoryService.ReadFileBytes(filePath);
 
             if (documentDownload != null)
             {
@@ -76,7 +88,7 @@ namespace TestProject.Controllers
 
                 var stream = new MemoryStream(documentDownload);
                 result = Request.CreateResponse(HttpStatusCode.OK);
-                
+
                 result.Content = new StreamContent(stream);
                 result.Content.Headers.ContentType =
                     new MediaTypeHeaderValue(MimeMapping.GetMimeMapping(fileInfo.Name));
@@ -97,5 +109,5 @@ namespace TestProject.Controllers
             return result;
         }
     }
-    
+
 }

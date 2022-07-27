@@ -1,15 +1,13 @@
-﻿// A $( document ).ready() block.
-var apiBaseUrl = 'http://localhost:55749/api/directory/';
+﻿var apiBaseUrl = 'http://localhost:55749/api/directory/';
 var getCurrentDirectory = apiBaseUrl + '' + 'GetCurrentDirectory';
 var postFile = apiBaseUrl + '' + 'PostFile';
 var downloadFile = apiBaseUrl + '' + 'DownloadFile';
-var htmlCurrentView = '';
 
 $(document).ready(function () {
     LoadCurrentDirectory();
 });
 
-function LoadCurrentDirectory() {  
+function LoadCurrentDirectory() {
     var qstring = GetParameterValues('directoryPath');
     var url = getCurrentDirectory;
     if (qstring) {
@@ -29,28 +27,28 @@ function LoadCurrentDirectory() {
             $('#container_currentDirectory').empty();
             $('#container_footer').empty();
 
+            //Show current directory
             if (data && data.CurrentDirectory) {
                 $('#container_currentDirectory').append('<h4>Path: ' + data.CurrentDirectory.Path + '</h4>');
                 if (sText && sText.length > 0) {
                     $('#container_currentDirectory').append('<p>Searched keyword: ' + sText + '<button class="searchButton" title="Clear search" onclick="clearSearch()">❌</button></p> ');
                 }
                 if (data.CurrentDirectory.Parent) {
-                    $('#container_currentDirectory').append('<button type="button" id="backButton" onclick=updateQueryString("backButton") folderPath="' + data.CurrentDirectory.Parent + '"> ← Back</button>');
+                    $('#container_currentDirectory').append('<button type="button" id="backButton" onclick=LoadFolder("backButton") folderPath="' + data.CurrentDirectory.Parent + '"> ← Back</button>');
                 }
 
                 $('#container_footer').append(' <label class="label">Subfolders</label><span class="label-val">' + data.CurrentDirectory.FolderCount + '</span ><label class="label">Files</label><span class="label-val">' + data.CurrentDirectory.FileCount + '</span>' + '<label class="label">Size</label><span class="label-val">' + data.CurrentDirectory.DirectorySize + '</span>');
             }
-
-            /*$('#container_fileList').append('<h1>Folders....</h1>');*/
+            //Show folders
             if (data && data.Folders) {
                 var list = '';
                 $.each(data.Folders, function (index, value) {
                     console.log(value.FullPath);
-                    list = list + '<li id="li_' + index + '" onclick=updateQueryString("li_' + index + '") folderPath="' + value.FullPath + '">' + value.Name + '</li>';
+                    list = list + '<li id="li_' + index + '" onclick=LoadFolder("li_' + index + '") folderPath="' + value.FullPath + '">' + value.Name + '</li>';
                 });
                 $('#container_fileList').append('<ul class="folder">' + list + '</ul>')
             }
-            /*$('#container_fileList').append('<h1>Files....</h1>');*/
+            //Show files
             if (data && data.Files && data.Files.length > 0) {
                 var list = '';
                 $.each(data.Files, function (index, value) {
@@ -89,12 +87,13 @@ function handleException(request, message, error) {
 }
 
 
-function updateQueryString(liId) {
+function LoadFolder(liId) {
     var fpath = $('#' + liId).attr('folderPath');
     $('#sText').val('');
     refreshQueryString(fpath);
 }
 
+//update the query string for deeplinking
 function refreshQueryString(fpath) {
     if (history.pushState) {
         var newurl = window.location.protocol + "//" + window.location.host + window.location.pathname + '?directoryPath=' + $.trim(fpath);
@@ -103,6 +102,7 @@ function refreshQueryString(fpath) {
     LoadCurrentDirectory();
 }
 
+//get Query string params
 function GetParameterValues(param) {
     var url = window.location.href.slice(window.location.href.indexOf('?') + 1).split('&');
     for (var i = 0; i < url.length; i++) {
@@ -113,6 +113,7 @@ function GetParameterValues(param) {
     }
 }
 
+//Button handler to search directory
 function searchDirectory() {
     var sText = $.trim($('#sText').val());
 
@@ -121,6 +122,7 @@ function searchDirectory() {
     }
 }
 
+//Button handler to upload file
 function UploadFile() {
     var fd = new FormData();
     var files = $('#file')[0].files[0];
@@ -148,12 +150,13 @@ function UploadFile() {
     });
 }
 
+//Clear button handler to clear the search
 function clearSearch() {
     $('#sText').val('');
     LoadCurrentDirectory();
 }
 
-
+//Link handler to download file
 function DownloadFile(fileToDownload) {
     var fpath = $('#' + fileToDownload).attr('filePath');
     var req = new XMLHttpRequest();

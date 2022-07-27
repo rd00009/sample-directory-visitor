@@ -126,8 +126,6 @@
     <Content Include="Views\web.config" />
     <Content Include="packages.config" />
     <Content Include="Views\Default\Index.cshtml" />
-    <Content Include="Views\Default\_CurrentDirectory.cshtml" />
-    <Content Include="Views\Default\_fileList.cshtml" />
     <None Include="Web.Debug.config">
       <DependentUpon>Web.config</DependentUpon>
     </None>

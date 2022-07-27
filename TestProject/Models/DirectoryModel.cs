@@ -8,8 +8,7 @@ namespace TestProject.Models
 {
     public class DirectoryModel
     {
-        public CurrentDirectory CurrentDirectory { get; set; }
-        public List<Folder> SiteMap { get; set; }
+        public CurrentDirectory CurrentDirectory { get; set; }       
         public List<Files> Files { get; set; }
         public List<Folder> Folders { get; set; }
         public string ResponseText { get; set; }=string.Empty;
