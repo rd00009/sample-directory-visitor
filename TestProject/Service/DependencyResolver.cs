@@ -1,13 +1,11 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Web;
 using System.Web.Http.Dependencies;
 using Unity;
 
 namespace TestProject.Service
-{	
-        public class UnityResolver : IDependencyResolver
+{
+    public class UnityResolver : IDependencyResolver
         {
             private readonly IUnityContainer _container;
 
